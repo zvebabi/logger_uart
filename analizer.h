@@ -11,7 +11,7 @@ class Analizer
 public:
     Analizer(QString sn_) : m_serial(sn_)
     {
-        qDebug() << "cstr sn#" + QString(m_serial);
+        qDebug() << "Analizer constructorSN #" + QString(m_serial);
     }
     ~Analizer();
     bool initLogger(QString fname_);

@@ -7,8 +7,8 @@ android: {
 QT += androidextras
 }
 linux: {
-QMAKE_CXXFLAGS += -O3 -g3
 }
+QMAKE_CXXFLAGS += -O2 -g3
 
 SOURCES += main.cpp \
     mydevice.cpp \
