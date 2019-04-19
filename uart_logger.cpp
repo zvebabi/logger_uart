@@ -76,7 +76,7 @@ void uartReader::enableLogging(QString delay_, QVariantList serialNums_)
     }
 //    readyToAskNextDevice = true;
     //init timer
-    m_logWriteDelay = delay_.toInt()*1000*60;
+    m_logWriteDelay = delay_.toInt()*1000;
     if(!timer)
     {
         qDebug() << "Create timer";
