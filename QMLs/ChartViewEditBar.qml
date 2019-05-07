@@ -65,41 +65,22 @@ RowLayout {
                     "#9C27B0", "#2196F3", "#009688", "#CDDC39", "#FF9800"
                 ]
         //Umeas
-        graph_Umeas.numSeries++;
-        var seriesName = qsTr("series_" + graph_Umeas.numSeries)
-        graph_Umeas.createSeries(ChartView.SeriesTypeLine,
+        graph_1.numSeries++;
+        var seriesName = qsTr("series_" + graph_1.numSeries)
+        graph_1.createSeries(ChartView.SeriesTypeLine,
                             seriesName,
                             axisX_Umeas, axisY_Umeas);
-        graph_Umeas.series(seriesName).color = /*colorList[
+        graph_1.series(seriesName).color = /*colorList[
                     Math.random()*100*( graph_Umeas.numSeries - 1) % colorList.length ]*/"#B71C1C"
-        reciever.sendSeriesPointer(graph_Umeas.series(seriesName),graph_Umeas.axisX(seriesName));
+        reciever.sendSeriesPointer(graph_1.series(seriesName),graph_1.axisX(seriesName));
         //U_ref
-        graph_Uref.numSeries++;
-        seriesName = qsTr("series_" + graph_Uref.numSeries)
-        graph_Uref.createSeries(ChartView.SeriesTypeLine,
+        graph_2.numSeries++;
+        seriesName = qsTr("series_" + graph_2.numSeries)
+        graph_2.createSeries(ChartView.SeriesTypeLine,
                             seriesName,
                             axisX_Uref, axisY_Uref);
-        graph_Uref.series(seriesName).color = /*colorList[
+        graph_2.series(seriesName).color = /*colorList[
                     Math.random()*100*( graph_Uref.numSeries - 1) % colorList.length ]*/"#B71C1C"
-        reciever.sendSeriesPointer(graph_Uref.series(seriesName),graph_Uref.axisX(seriesName));
-        //U_pn
-        graph_Upn.numSeries++;
-        seriesName = qsTr("series_" + graph_Upn.numSeries)
-        graph_Upn.createSeries(ChartView.SeriesTypeLine,
-                            seriesName,
-                            axisX_Upn, axisY_Upn);
-        graph_Upn.series(seriesName).color = /*colorList[
-                    Math.random()*100*( graph_Upn.numSeries - 1) % colorList.length ]*/"#B71C1C"
-        reciever.sendSeriesPointer(graph_Upn.series(seriesName),graph_Upn.axisX(seriesName));
-        //Conc
-        graph_C.numSeries++;
-        seriesName = qsTr("series_" + graph_C.numSeries)
-        graph_C.createSeries(ChartView.SeriesTypeLine,
-                            seriesName,
-                            axisX_C, axisY_C);
-        graph_C.series(seriesName).color = /*colorList[
-                    Math.random()*100*( graph_C.numSeries - 1) % colorList.length ]*/"#B71C1C"
-        reciever.sendSeriesPointer(graph_C.series(seriesName),graph_C.axisX(seriesName));
-
+        reciever.sendSeriesPointer(graph_2.series(seriesName),graph_2.axisX(seriesName))
     }
 }

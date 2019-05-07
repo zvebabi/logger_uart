@@ -22,11 +22,11 @@ Item {
         anchors.fill: parent
 //        anchors.margins: 10*app.dp
         anchors.topMargin: menuBar.height//+10*app.dp
-        ColumnLayout {
+        RowLayout {
             Layout.alignment: Qt.AlignLeft | Qt.AlignTop// | Qt.AlignBottom
 //            Layout.preferredHeight: app.height - menuBar.height
-            Layout.leftMargin: 10*app.dp
-            spacing: 10*app.dp
+            Layout.leftMargin: 0*app.dp
+            spacing: 0*app.dp
 //            anchors.top: menuBar.bottom
 //            anchors.fill: parent
 //            anchors.margins: 10*app.dp
@@ -36,10 +36,11 @@ Item {
             id: colForSnap
             Rectangle {
                 color: "transparent"
-                Layout.preferredHeight: (app.height - menuBar.height) / 4
+//                color: "blue"
+                Layout.preferredHeight: (app.height - menuBar.height)
                 Layout.preferredWidth: app.width/2
                 ChartView {
-                    id: graph_Umeas
+                    id: graph_1
                     visible: true
                     anchors.fill: parent
                     antialiasing: true
@@ -95,10 +96,11 @@ Item {
             }
             Rectangle {
                 color: "transparent"
-                Layout.preferredHeight: (app.height - menuBar.height) / 4
+//                color: "red"
+                Layout.preferredHeight: (app.height - menuBar.height)
                 Layout.preferredWidth: app.width/2
                 ChartView {
-                    id: graph_Uref
+                    id: graph_2
                     visible: true
                     anchors.fill: parent
                     antialiasing: true
@@ -152,6 +154,12 @@ Item {
                     }
                 }
             }
+        }
+        ChartViewEditBar {
+            id: editBar
+            visible: false
+            Layout.alignment: Qt.AlignHCenter |Qt.AlignBottom
+
         }
     }
     Timer {

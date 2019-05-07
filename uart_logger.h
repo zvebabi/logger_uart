@@ -52,16 +52,21 @@ public slots:
     void setCurrentConc(QString _conc){
         m_currentConc = _conc;//.toDouble();
     }
-
+    void sendSeriesPointer(QtCharts::QAbstractSeries *series_,
+                           QtCharts::QAbstractAxis *Xaxis_);
     void requestDataFromDevices();
     void selectPath(QString pathForSave);
-
+signals:
+    void makeSeries(); // run 1 time on startup
 private:
     void processLine(const QByteArray& line);
+
     void sendDataToDevice();
     //void dataProcessingHandler(QStringList& line_);
     void dataProcessingHandler(QVector<QString> &line_);
     void processTemppoint(int num, double value);
+
+    void update(int graphIdx, QPointF p);
     void buttonPressHandler(const QStringList& line);
 
     int m_serNumber;
@@ -70,6 +75,10 @@ private:
     QString m_currentConc;
     int m_logWriteDelay;
     std::shared_ptr<QTimer> timer;
+
+    QVector<QtCharts::QAbstractSeries *>m_series;
+    QVector<QtCharts::QAbstractAxis *>m_axisX;
+    QVector<QVector<QPointF>> m_data;
 
     std::shared_ptr<QFile> logFile;
     QVector<QString> m_queueCommandsToSend;
