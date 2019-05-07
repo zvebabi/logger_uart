@@ -59,7 +59,8 @@ public slots:
 private:
     void processLine(const QByteArray& line);
     void sendDataToDevice();
-    void dataProcessingHandler(QVector<QPointF> tempPoint);
+    //void dataProcessingHandler(QStringList& line_);
+    void dataProcessingHandler(QVector<QString> &line_);
     void processTemppoint(int num, double value);
     void buttonPressHandler(const QStringList& line);
 
@@ -76,8 +77,9 @@ private:
     QString documentsPath;
     std::ofstream diagnosticLog;
     std::vector<Analizer> loggers;
-    std::atomic_bool readyToAskNextDevice;
-
+    //std::atomic_bool readyToAskNextDevice;
+    int currentDevice;
+    std::chrono::high_resolution_clock::time_point testTime;
 };
 
 #endif // ANALIZERCDC_H

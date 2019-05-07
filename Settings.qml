@@ -150,7 +150,7 @@ Item {
                         text:"5"
                         validator: IntValidator {bottom: 1; top: 120;}
                         ToolTip.visible: hovered
-                        ToolTip.text: qsTr("Write delay, min")
+                        ToolTip.text: qsTr("Write delay, sec")
                         placeholderText: "Write Delay"
                     }
                     Switch {

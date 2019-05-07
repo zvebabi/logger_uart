@@ -19,16 +19,14 @@ bool Analizer::initLogger(QString fname_)
     }
     QTextStream ts ( logFile.get() );
     //create header
-    ts << QString("Temp\tConc_real\tConc_meas\tSD\tU_meas\tSD\t"
-                  "U_Ref\tSD\tU_d\tSD\n");
+    ts << QString("Time\tN\tC1\tC2\tUc1\tUc2\tUd1\tUd2\tConc\n");
     return true;
 }
 
 void Analizer::writeLine(QString line)
 {
-    qDebug() << "writeLine " + line;
+   // qDebug() << "writeLine " + line;
     //parce and write
     QTextStream ts ( logFile.get() );
-    ts << "sdgdg,fd,fd,ff\r\n";
-
+    ts << line;
 }

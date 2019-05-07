@@ -8,12 +8,12 @@
 #include <ctime>
 #include <memory>
 
-//#define REAL_DEVICE
-#define SHOW_Debug_
+#define REAL_DEVICE
+//#define SHOW_Debug_
 
 uartReader::uartReader(QObject *parent)
   : uartDevice(parent), m_serNumber(-1), m_nSecs(3600)
-  , readyToAskNextDevice(true)
+  , m_currentConc("0"), currentDevice(0)
 {
     qRegisterMetaType<QtCharts::QAbstractSeries*>();
     qRegisterMetaType<QtCharts::QAbstractAxis*>();
@@ -39,7 +39,6 @@ void uartReader::initDevice(QString port, QString baudRate)
     {
         qDebug() << "initDevice return false";
     }
-    else
 #endif
 }
 
@@ -65,7 +64,8 @@ void uartReader::enableLogging(QString delay_, QVariantList serialNums_)
     for (auto && device : loggers)
     {
         auto fileName = QString(documentsPath
-                      + device.getSerialNumber() );
+                      + device.getSerialNumber()
+                      + ".csv");
         if (!device.initLogger(fileName))
         {
             qDebug() << "Cannot create logger for device #"
@@ -76,7 +76,7 @@ void uartReader::enableLogging(QString delay_, QVariantList serialNums_)
     }
 //    readyToAskNextDevice = true;
     //init timer
-    m_logWriteDelay = delay_.toInt()*1000*60;
+    m_logWriteDelay = delay_.toInt()*1000;
     if(!timer)
     {
         qDebug() << "Create timer";
@@ -132,42 +132,85 @@ void uartReader::sendDataToDevice()
 
 void uartReader::processLine(const QByteArray &_line)
 {
+    auto t1 = std::chrono::high_resolution_clock::now();
+
 #ifdef SHOW_Debug_
     qDebug() << _line;
 #endif //SHOW_Debug_
 
-    QStringList line;
+    //QStringList line;
 //    logFile->write(_line);
+    QVector<QString> splitLine;
 
-    //appendDataToseries/writeTofile
-
-    //t C Um Ur Ud a b c n ce c0; 11val;
-    //1 2 3  4  5  6 7 8 9 10 11
     for (auto w : _line.split(';'))
     {
-        line.append(QString(w));
+        //line.append(QString(w));
+        splitLine.push_back(QString(w));
+//        qDebug() << "element is:" << *line.rbegin();
     }
-    qDebug() << "_line size is " + QString(line.size());
-    if(line[0] == "LOG")
+   // qDebug() << "splitLine size is " << splitLine.size();
+
+
+    if(splitLine.empty())
+    {
+        qDebug() << "Empty splitLine!";
         return;
-    if(line[0] == "OK")
-        readyToAskNextDevice = true;
-    //create timer thread to hold flag while device unsleep
+    }
 
+    if(splitLine[0] == "LOG\r\n")
+    {
+        auto testT2 = std::chrono::duration<double, std::milli>(t1-testTime).count();
+        qDebug() << "start processLine at" << testT2;
+        qDebug() << "processLine started for dev" << currentDevice;
+        return;
+    }
+    if(splitLine[0] == "OK\r\n")
+    {
+         qDebug() << "reciev OK";
+         return;
+    }
+    if(splitLine[0] == "\r\n")
+    {
+        t1 = std::chrono::high_resolution_clock::now();
+        auto testT2 = std::chrono::duration<double, std::milli>(t1-testTime).count();
+        qDebug() << "end processLine at" << testT2;
+        qDebug() << "processLine ended for dev" << currentDevice;
+        currentDevice++;
+        if (currentDevice == loggers.size())
+        {
+            qDebug()<< "end epoch, restart timer";
+            timer->start(m_logWriteDelay);
+            currentDevice = 0;
+        }
+        else
+        {
+            qDebug()<< "wait for next device";
+            timer->start(100);
+        }
+        return;
+    }
+      //processDAtaLine
 
-    if(!m_queueCommandsToSend.empty())
-        sendDataToDevice();
-
-
-//    dataProcessingHandler(tempPoint); //send data to ui
-//    delayThread.join();
+    dataProcessingHandler(splitLine);
 
 }
 
-void uartReader::dataProcessingHandler(QVector<QPointF> tempPoint)
+//void uartReader::dataProcessingHandler(QStringList &line_)
+void uartReader::dataProcessingHandler(QVector<QString> &line_)
 {
-    //sendDataToUi
-      //sendDataToFileOnce
+    QString lineForLog;
+    lineForLog.append(QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss\t"));
+    for (auto it = line_.begin()+1; it != line_.end()-1; it++)
+    {
+        lineForLog.append(*it);
+        lineForLog.append("\t");
+        //qDebug() << "element is:" << *it;
+    }
+    lineForLog.append(m_currentConc);
+    lineForLog.append("\n");
+
+   // qDebug() << "lineForLog: " << lineForLog;
+    loggers[currentDevice].writeLine(lineForLog);
 
 }
 
@@ -178,35 +221,18 @@ void uartReader::processTemppoint(int num, double value)
 
 void uartReader::requestDataFromDevices()
 {
-    if(!readyToAskNextDevice)
-        return;
-    std::chrono::milliseconds timeoutDelay(200);
-    QString cmd;
-    for (auto&& dev: loggers) {
-        auto _sn = dev.getSerialNumber();
+    //if(!readyToAskNextDevice)
+    //    return;
 
-        cmd = QString("AT+%1+LOG$\r").arg(_sn.toInt(),2,10, QChar('0'));
-        qDebug() << "cmd is " <<cmd;
-        readyToAskNextDevice = false;
-        sendData(cmd);
-
-        auto t1 = std::chrono::high_resolution_clock::now();
-        auto delayThread = std::thread([&]() {
-            auto t2 = std::chrono::high_resolution_clock::now();
-            while( (std::chrono::duration<double, std::milli>(t2 - t1) < timeoutDelay) )
-            {
-                t2 = std::chrono::high_resolution_clock::now();
-            }
-            qDebug() << "timeout for#"+ _sn;
-            emit sendDebugInfo("timeout for#"+ _sn,700);
-            readyToAskNextDevice=true;
-        });
-        while (!readyToAskNextDevice) {;}
-        delayThread.join();
-    }
+    timer->stop();
     qDebug() << "Request data from devices";
-    //TODO
-    //go throw all serial numbers with some delay and send cmd to uar t
+
+    auto _sn = loggers[currentDevice].getSerialNumber();
+    QString  cmd = QString("AT+%1+LOG$\r").arg(_sn.toInt(),2,16, QChar('0'));
+
+    sendData(cmd);
+    //currentDevice++;
+    testTime = std::chrono::high_resolution_clock::now();
 }
 
 
