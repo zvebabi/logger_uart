@@ -174,7 +174,7 @@ ApplicationWindow {
 
     Component.onCompleted: {
 //        currentPage = "Settings.qml"
-        mainMenu.currentItem = 0
+        mainMenu.currentItem = 1
     }
     SwipeView {
         id: view
@@ -189,9 +189,9 @@ ApplicationWindow {
         //                          1 : mainMenu.currentItem == 0 ? 0 : mainMenu.currentItem - 1
         anchors.fill: parent
         anchors.top: menuBar.Bottom
-//        ChartView {
-//            id: chV
-//        }
+        ChartView {
+            id: chV
+        }
         Settings {
         }
         About {

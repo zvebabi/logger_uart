@@ -22,125 +22,132 @@ Item {
         anchors.fill: parent
 //        anchors.margins: 10*app.dp
         anchors.topMargin: menuBar.height//+10*app.dp
-        Rectangle {
-            id: listOfConnectedDevices
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-            color: "transparent"
-//            Layout.preferredHeight: deviceSetter.height
-            Layout.minimumHeight: 350*app.dp
-            Layout.fillHeight: true
-            Layout.minimumWidth: 400 *app.dp
-            property var serialNumValues: []
-            property var serialNum:[]
-            ListModel{
-                id: listOfCD_model
-            }
-            ListView {
-                id: listOfCD_view
-                width: 180; height: app.height*0.8
-                anchors.left: parent.left
-                anchors.top: parent.top
-                flickableDirection: Flickable.VerticalFlick
-                boundsBehavior: Flickable.StopAtBounds
-                clip: true
-                model: listOfCD_model
-//                model: ListModel {id : listModel}
-                delegate: RowLayout {
-                    spacing: 2*app.dp
-                    Text {
-                        Layout.preferredWidth: 70* app.dp
-                        Layout.alignment: Qt.AlignBottom
-                        Layout.bottomMargin: 23 * app.dp
-                        text: name
-                        font.pixelSize: app.fontPixelSize}
-                    TextField {
-                        Layout.alignment: Qt.AlignBottom
-                        text: listOfConnectedDevices.serialNumValues[index]
-//                        inputMask: index == 0 ? "dd;_" : "9.9dddd;_"
-                        placeholderText: "serialNumber#" + name
-                        font.pixelSize: app.fontPixelSize
-                        onEditingFinished: {
-                            listOfConnectedDevices.serialNumValues[index] = text;
-                            listOfConnectedDevices.serialNum[index] = name;
-                            //TODO: check correctnes of input
-                        }
-                    }
-                }
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                ScrollBar.vertical: ScrollBar {}
-            }
-            Button {
-                id:addSerialNumber_btn
-                contentItem: ButtonLabel {text: qsTr("Add device")}
-                anchors.top: listOfCD_view.bottom
-                function createListElement(num_) {
-                    return {
-                        name: num_
-                    };
-                }
-                onClicked: {
-                    listOfConnectedDevices.serialNumValues.push(listOfCD_model.count)
-                    listOfConnectedDevices.serialNum.push(listOfCD_model.count)
-                    console.log(listOfConnectedDevices.serialNumValues.length)
-                    listOfCD_model.append(createListElement(listOfCD_model.count))
-                }
-            }
-        }
         ColumnLayout {
-            id: controlPanelLayout
-            Layout.alignment:  Qt.AlignTop
-            Layout.rightMargin: 10*app.dp
-            RowLayout {
-                TextField {
-                    id: gasConc_tf
-                    text:qsTr("0")
-                    placeholderText: "Conc"
-                    ToolTip.visible: hovered
-                    ToolTip.text: qsTr("Gas conc.")
-                    validator: DoubleValidator {
-                        bottom: 0;
-                        top: 99999;
-                        decimals: 10;
-                        notation: "StandardNotation"
-
+            Layout.alignment: Qt.AlignLeft | Qt.AlignTop// | Qt.AlignBottom
+//            Layout.preferredHeight: app.height - menuBar.height
+            Layout.leftMargin: 10*app.dp
+            spacing: 10*app.dp
+//            anchors.top: menuBar.bottom
+//            anchors.fill: parent
+//            anchors.margins: 10*app.dp
+//            anchors.topMargin: menuBar.height+10*app.dp
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            id: colForSnap
+            Rectangle {
+                color: "transparent"
+                Layout.preferredHeight: (app.height - menuBar.height) / 4
+                Layout.preferredWidth: app.width/2
+                ChartView {
+                    id: graph_Umeas
+                    visible: true
+                    anchors.fill: parent
+                    antialiasing: true
+                    legend.visible: false
+                    property int numSeries : 0 //current number of graphs
+                    property real minRngX: 0.0
+                    property real maxRngX: 0.0
+                    property real minRngY: 0.0
+                    property real maxRngY: 0.0
+                    ValueAxis {
+                        id: axisX_Umeas
+                        visible:false
+                        objectName: "axisX_Umeas"
+                        titleText: qsTr("Time")
+                        min: 410
+                        max: 500
+                        tickCount: 13
+                        minorTickCount: 3
+                        labelFormat: "%.1f"
                     }
-                }
-                Button {
-                    id: setConcentration
-                    enabled: true
-                    contentItem: ButtonLabel {text: qsTr("SetConcentration")}
-                    onClicked: {
-                        reciever.setCurrentConc(gasConc_tf.text)
+                    ValueAxis {
+                        id: axisY_Umeas
+                        objectName: "axisY_Umeas"
+//                        titleText: app.yAxisName
+                        min: 0.9
+                        max:1.1
+                        tickCount: 5
+                        minorTickCount: 4
                     }
-                }
-            }
-            RowLayout{
-                TextField {
-                    id: writeDelay_tf
-                    text:"5"
-                    validator: IntValidator {bottom: 1; top: 120;}
-                    ToolTip.visible: hovered
-                    ToolTip.text: qsTr("Write delay, min")
-                    placeholderText: "Write Delay"
-                }
-                Switch {
-                    id: writeToFileSwitcher
-                    text: qsTr("WriteModeOff")
-                    onClicked: {
-                        //TODO: send a signal to reciever to switch between DEBUG/WORK mode
-                        console.log("position: " + position)
-                        if (position == 1) {
-                            if(serialNumber_tf.text.length < 2) {
-                                showPopupTips(qsTr("Enter serial number(minimum2 character)"), 1500)
-                            } else {
-                                writeToFileSwitcher.text = qsTr("WriteModeOn")
-                                reciever.enableLogging(writeDelay_tf.text)
+                    MouseArea {
+                        anchors.fill: parent
+                        property int lastX: 0
+                        property int lastY: 0
+                        onPressed: {
+                            lastX = mouse.x
+                            lastY = mouse.y
+                        }
+                        onReleased: {
+        //                    view.interactive : true
+                        }
+                        onPositionChanged: {
+                            if (lastX !== mouse.x) {
+                                graphs.scrollRight(lastX - mouse.x)
+                                lastX = mouse.x
+                            }
+                            if (lastY !== mouse.y) {
+                                graphs.scrollDown(lastY - mouse.y)
+                                lastY = mouse.y
                             }
                         }
-                        else {
-                            writeToFileSwitcher.text = qsTr("WriteModeOff")
-                            reciever.disableLogging();
+                    }
+                }
+            }
+            Rectangle {
+                color: "transparent"
+                Layout.preferredHeight: (app.height - menuBar.height) / 4
+                Layout.preferredWidth: app.width/2
+                ChartView {
+                    id: graph_Uref
+                    visible: true
+                    anchors.fill: parent
+                    antialiasing: true
+                    legend.visible: false
+                    property int numSeries : 0 //current number of graphs
+                    property real minRngX: 0.0
+                    property real maxRngX: 0.0
+                    property real minRngY: 0.0
+                    property real maxRngY: 0.0
+                    ValueAxis {
+                        id: axisX_Uref
+                        visible:false
+                        objectName: "axisX_Uref"
+                        titleText: qsTr("Time")
+                        min: 410
+                        max: 500
+                        tickCount: 13
+                        minorTickCount: 3
+                        labelFormat: "%.1f"
+                    }
+                    ValueAxis {
+                        id: axisY_Uref
+                        objectName: "axisY_Uref"
+//                        titleText: app.yAxisName
+                        min: 0.9
+                        max:1.1
+                        tickCount: 5
+                        minorTickCount: 4
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        property int lastX: 0
+                        property int lastY: 0
+                        onPressed: {
+                            lastX = mouse.x
+                            lastY = mouse.y
+                        }
+                        onReleased: {
+        //                    view.interactive : true
+                        }
+                        onPositionChanged: {
+                            if (lastX !== mouse.x) {
+                                graphs.scrollRight(lastX - mouse.x)
+                                lastX = mouse.x
+                            }
+                            if (lastY !== mouse.y) {
+                                graphs.scrollDown(lastY - mouse.y)
+                                lastY = mouse.y
+                            }
                         }
                     }
                 }

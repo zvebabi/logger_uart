@@ -12,11 +12,11 @@ Item {
 
     ListModel {
         id: modelMenu
-//        ListElement {
-//            item: "chart_view"
-////            icon: "qrc:/images/icon_game.png"
-//            page: "ChartView.qml"
-//        }
+        ListElement {
+            item: "chart_view"
+//            icon: "qrc:/images/icon_game.png"
+            page: "ChartView.qml"
+        }
         ListElement {
             item: "settings"
 //            icon: "qrc:/images/icon_settings.png"
