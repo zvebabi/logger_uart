@@ -64,8 +64,8 @@ void uartDevice::sendData(QString &cmd_)
     if(device->isOpen())
     {
             device->write(cmd_.toStdString().c_str());
-            emit sendDebugInfo(QString("Send: ") + cmd_);
-            qDebug() << "sendDataToDevice: " + cmd_;
+           // emit sendDebugInfo(QString("Send: ") + cmd_);
+            qDebug() << "uartDevice::sendData: " + cmd_;
     }
     else
     {

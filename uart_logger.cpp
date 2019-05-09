@@ -8,11 +8,11 @@
 #include <ctime>
 #include <memory>
 
-//#define REAL_DEVICE
+#define REAL_DEVICE
 //#define SHOW_Debug_
 
 uartReader::uartReader(QObject *parent)
-  : uartDevice(parent), m_serNumber(-1), m_nSamples(0), m_nSecs(150)
+  : uartDevice(parent), m_serNumber(-1), m_nSamples(0), m_nSecs(60)
   , m_currentConc("0"), currentDevice(0)
 {
     qRegisterMetaType<QtCharts::QAbstractSeries*>();
@@ -131,8 +131,8 @@ void uartReader::sendDataToDevice()
             sendData(cmd_);
 #endif
             m_queueCommandsToSend.pop_front();
-            emit sendDebugInfo(QString("Send: ") + cmd_);
-            qDebug() << "sendDataToDevice: " + cmd_;
+            //emit sendDebugInfo(QString("Send: ") + cmd_);
+            qDebug() << "uartReader::sendDataToDevice " + cmd_;
         }
 }
 
@@ -212,10 +212,10 @@ void uartReader::dataProcessingHandler(QVector<QString> &line_)
     {
         lineForLog.append(*it);
         lineForLog.append("\t");
-        if (it == line_.begin()+3 )
+        if (it == line_.begin()+2 )
             dataToShow.append(*it);
 #ifdef ONE_DEV_TWO_PARAMS
-        if (it == line_.begin()+4 )
+        if (it == line_.begin()+3 )
         {
             dataToShow.append(":");
             dataToShow.append(*it);
@@ -286,8 +286,9 @@ void uartReader::update(int graphIdx, QPointF p)
         if(m_data.size() < graphIdx + 1)
             m_data.resize(graphIdx+1);
         m_data[graphIdx].push_back(p);
-        QPointF min = *std::min_element(m_data[graphIdx].begin(), m_data[graphIdx].end(),[](QPointF a, QPointF b){ return a.ry() < b.ry();});
-        QPointF max = *std::max_element(m_data[graphIdx].begin(), m_data[graphIdx].end(),[](QPointF a, QPointF b){ return a.ry() < b.ry();});
+        auto numOfVidiblePoints =  m_data[graphIdx].size() >= m_nSecs ? m_nSecs : m_data[graphIdx].size();
+        QPointF min = *std::min_element(m_data[graphIdx].rbegin(), m_data[graphIdx].rbegin() + numOfVidiblePoints, [](QPointF a, QPointF b){ return a.ry() < b.ry();});
+        QPointF max = *std::max_element(m_data[graphIdx].rbegin(), m_data[graphIdx].rbegin() + numOfVidiblePoints, [](QPointF a, QPointF b){ return a.ry() < b.ry();});
         chart[1]->setMax(max.ry());
         chart[1]->setMin(min.ry());
     }
